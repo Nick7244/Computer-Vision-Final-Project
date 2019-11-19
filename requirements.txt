@@ -1,8 +1,10 @@
+csv
 imageio==2.6.1
 keras
 numpy==1.17.2
 pandas==0.25.2
 opencv-python
+os
 Pillow==6.2.1
 matplotlib==3.02
 scikit-image==0.16.2
