@@ -4,4 +4,10 @@ A Deep Learning-based Approach to Autonomous Vehicle Path Planning and Object De
 
 Akaash Sanyal, Akash Chaurasia, Nicholas Maritato, Parth Vora
 
+Current workflow:
+Set up known architectures:
+- VGG16
+- ResNet
+- InceptionV3
+
 
