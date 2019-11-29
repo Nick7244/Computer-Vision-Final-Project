@@ -13,6 +13,7 @@ Extract features from previous blocks of architectures and test performance
 Create custom architecture
 Evaluate speed of prediction and size of models
 '''
+import keras
 from keras.applications import ResNet50
 from keras.applications import InceptionV3
 from keras.applications import VGG16
@@ -50,11 +51,11 @@ if args["model"] not in MODELS.keys():
 	raise AssertionError("Invalid model")
 
 # Gets proper shape and preprocessing function
-inputShape = (224,224)
+input_shape = (224,224)
 preprocess = imagenet_utils.preprocess_input
 
 if args["model"] == "inception":
-	inputShape = (299, 299)
+	input_shape = (299, 299)
 	preprocess = preprocess_input
 
 train_datagen = ImageDataGenerator( 
@@ -89,7 +90,7 @@ for layer in model.layers:
 
 # New classification
 model.add(Flatten()) 
-model.add(Dense(1024, activation='relu', input_dim = ) 
+model.add(Dense(1024, activation='relu')) 
 model.add(Activation('relu')) 
 model.add(Dropout(0.5)) 
 model.add(Dense(num_class)) 
