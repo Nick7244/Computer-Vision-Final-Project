@@ -19,22 +19,23 @@ from keras.applications import InceptionV3
 from keras.applications import VGG16
 from keras.applications import imagenet_utils
 from keras.applications.inception_v3 import preprocess_input
-#from keras.preprocessing.image import img_to_array
-#from keras.preprocessing.image import load_img
 from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential
+from keras.layers import Dropout, Flatten, Dense
 import numpy as np
 import argparse
-#import cv2
-#import random
-#import pickle
+import pickle
 
 # Variables
 num_class = 43
-batch_size = 32
-train_data_dir = 'data/train'
-validation_data_dir = 'data/valid'
-num_train = 1000
-num_validation = 200
+train_batch_size = 32
+valid_batch_size = 1
+train_data_dir = 'GTSRB/Training'
+validation_data_dir = 'GTSRB/Validation'
+testing_data_dir = ''
+num_train = 21312
+num_validation = 5328
+num_epochs = 50
 model_file = 'first_try.h5'
 
 # Parse arguments
@@ -59,28 +60,36 @@ if args["model"] == "inception":
 	preprocess = preprocess_input
 
 train_datagen = ImageDataGenerator( 
-    rescale=1. / 255, 
+    rescale=1. / 255,
+    width_shift_range=[-0.2, 0.2],
+    height_shift_range=[-0.2, 0.2],
+    brightness_range=[0.5, 1.5],
+    zoom_range=[0.75, 1.25],
     shear_range=0.2, 
-    zoom_range=0.2, 
     horizontal_flip=True,
     preprocessing_function=preprocess)
 
 validation_datagen = ImageDataGenerator(
     rescale=1. / 255,
+    width_shift_range=[-0.2, 0.2],
+    height_shift_range=[-0.2, 0.2],
+    brightness_range=[0.5, 1.5],
+    zoom_range=[0.75, 1.25],
+    shear_range=0.2,
+    horizontal_flip=True,
     preprocessing_function=preprocess)
 
 train_generator = train_datagen.flow_from_directory( 
     train_data_dir, 
     target_size= input_shape, 
-    batch_size=batch_size, 
+    batch_size=train_batch_size, 
     class_mode='categorical')
 
 validation_generator = validation_datagen.flow_from_directory(
     validation_data_dir,
     target_size= input_shape,
-    batch_size=batch_size,
+    batch_size=valid_batch_size,
     class_mode='categorical')
-
 
 # Initializes model with ImageNet weights and prevent retraining
 model_name = MODELS[args["model"]]
@@ -91,10 +100,8 @@ for layer in model.layers:
 # New classification
 model.add(Flatten()) 
 model.add(Dense(1024, activation='relu')) 
-model.add(Activation('relu')) 
 model.add(Dropout(0.5)) 
-model.add(Dense(num_class)) 
-model.add(Activation('softmax'))
+model.add(Dense(num_class, activation='softmax')) 
 
 model.compile(loss='categorical_crossentropy', 
               optimizer='rmsprop', 
@@ -102,12 +109,15 @@ model.compile(loss='categorical_crossentropy',
 
 model.fit_generator(
         train_generator,
-        steps_per_epoch= num_train // batch_size,
-        epochs=50,
+        steps_per_epoch= num_train // train_batch_size,
+        epochs= num_epochs,
         validation_data=validation_generator,
-        validation_steps= num_validation// batch_size)
+        validation_steps= num_validation // valid_batch_size)
 
 model.save(model_file)
+
+model.evaluate_generator(generator=valid_generator,
+        steps=  num_validation // valid_batch_size)
 
 '''
 To load model, do model = load_model('model.h5')
