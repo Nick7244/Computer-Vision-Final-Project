@@ -104,7 +104,7 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop', 
               metrics=['accuracy'])
 
-checkpointer = ModelCheckpoint(filepath= model_type+'_{epoch:02d}-{val_acc:.2f}.hdf5', verbose=1, save_best_only=True)
+checkpointer = ModelCheckpoint(filepath= model_type+'_{epoch:02d}.h5', verbose=1)
 
 model.fit_generator(
         train_generator,
@@ -115,10 +115,6 @@ model.fit_generator(
 	callbacks=[checkpointer])
 
 model.save(model_file)
-
-# Not too sure about this but we'll see when we get here
-model.evaluate_generator(generator=valid_generator,
-        steps=  num_validation // valid_batch_size)
 
 '''
 To load model, do model = load_model('model.h5')
