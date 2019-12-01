@@ -58,7 +58,6 @@ train_datagen = ImageDataGenerator(
     brightness_range=[0.5, 1.5],
     zoom_range=[0.75, 1.25],
     shear_range=0.2, 
-    horizontal_flip=True,
     preprocessing_function=preprocess)
 
 validation_datagen = ImageDataGenerator(
@@ -68,7 +67,6 @@ validation_datagen = ImageDataGenerator(
     brightness_range=[0.5, 1.5],
     zoom_range=[0.75, 1.25],
     shear_range=0.2,
-    horizontal_flip=True,
     preprocessing_function=preprocess)
 
 train_generator = train_datagen.flow_from_directory( 
