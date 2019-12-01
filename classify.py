@@ -24,7 +24,7 @@ import numpy as np
 import pickle
 
 # Variables
-model = "vgg16" # Choose from one of the keys of MODELS
+model_type = "vgg16" # Choose from one of the keys of MODELS
 num_class = 43
 train_batch_size = 48
 valid_batch_size = 48
@@ -34,20 +34,20 @@ testing_data_dir = ''
 num_train = 21312 # Corresponds to number of training images
 num_validation = 5328 # Corresponds to number of validation images
 num_epochs = 25
-model_file = 'first_try_'+model+'.h5'
+model_file = 'first_try_'+model_type+'.h5'
 
 # Dictionary of pretrained architectures
 MODELS = {"vgg16": VGG16, "inception": InceptionV3, "resnet": ResNet50}
 
 # Makes sure using a valid model
-if model not in MODELS.keys():
+if model_type not in MODELS.keys():
         raise AssertionError("Invalid model")
 
 # Gets proper shape and preprocessing function
 input_shape = (224,224)
 preprocess = imagenet_utils.preprocess_input
 
-if model == "inception":
+if model_type == "inception":
 	input_shape = (299, 299)
 	preprocess = preprocess_input
 
@@ -82,7 +82,7 @@ validation_generator = validation_datagen.flow_from_directory(
     class_mode='categorical')
 
 # Initializes model with ImageNet weights and prevent retraining
-model_name = MODELS[model]
+model_name = MODELS[model_type]
 base_model = model_name(include_top=False, weights="imagenet")
 for layer in base_model.layers:
     layer.trainable = False
