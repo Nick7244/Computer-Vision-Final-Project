@@ -19,7 +19,8 @@ from keras.applications import imagenet_utils
 from keras.applications.inception_v3 import preprocess_input
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Model, Sequential
-from keras.layers import Dropout, Flatten, Dense, GlobalAveragePooling2D
+from keras.models import load_model
+from keras.layers import Dropout, Dense, GlobalAveragePooling2D
 import numpy as np
 import pickle
 
@@ -92,8 +93,7 @@ print('Base model loaded.')
 # New classification
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
-#x = Flatten(input_shape = base_model.output_shape[1:])(x)
-x = Dense(1024, activation='relu')(x)
+x = Dense(256, activation='relu')(x)
 x = Dropout(0.5)(x)
 predictions = Dense(num_class, activation='softmax')(x)
 
