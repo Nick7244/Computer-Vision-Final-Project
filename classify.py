@@ -104,7 +104,7 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop', 
               metrics=['accuracy'])
 
-checkpointer = ModelCheckpoint(filepath= model+'.{epoch:02d}-{val_acc:.2f}.hdf5', verbose=1, save_best_only=True)
+checkpointer = ModelCheckpoint(filepath= model_type+'_{epoch:02d}-{val_acc:.2f}.hdf5', verbose=1, save_best_only=True)
 
 model.fit_generator(
         train_generator,
