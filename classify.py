@@ -21,6 +21,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Model, Sequential
 from keras.models import load_model
 from keras.layers import Dropout, Dense, GlobalAveragePooling2D
+from keras.callbacks import ModelCheckpoint
 import numpy as np
 import pickle
 
@@ -103,12 +104,15 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop', 
               metrics=['accuracy'])
 
+checkpointer = ModelCheckpoint(filepath= model+'.{epoch:02d}-{val_acc:.2f}.hdf5', verbose=1, save_best_only=True)
+
 model.fit_generator(
         train_generator,
         steps_per_epoch= num_train // train_batch_size,
         epochs= num_epochs,
         validation_data=validation_generator,
-        validation_steps= num_validation // valid_batch_size)
+        validation_steps= num_validation // valid_batch_size,
+	callbacks=[checkpointer])
 
 model.save(model_file)
 
