@@ -3,7 +3,7 @@
 Akaash Sanyal, Akash Chaurasia, Nicholas Maritato, Parth Vora
 
 ## Current Workflow
-### Set up architectures
+### Set up architectures with transfer learning
 - VGG16
   - Update VGG_model.py
   - Remove final layer and replace with correct classification
@@ -13,20 +13,12 @@ Akaash Sanyal, Akash Chaurasia, Nicholas Maritato, Parth Vora
 - InceptionV3
   - Update Inception_model.py
   - Remove final layer and replace with correct classification
-- Custom
-  - Decide on custom architecture
-  - Update Custom_model.py
 
 ### Train models
-- Using dataset, train relevant parts of model
+- Using dataset, train new top layer
 
 ### Test performance and speed
 - Using dataset, test accuracy and speed of prediction
 
-### Find optimal preprocessing
-- Use feature data from 3 established architectures as input to custom architecture
-- Summarize performance and speed
-
 ### Find optimal feature layer
-- Use feature data from between blocks of established architectures as input to custom architecture
-- Summarize performance and speed
+- For preloaded architecture with the best performance, fine-tune model by unfreezing blocks
