@@ -40,16 +40,10 @@ def gstreamer_pipeline(
         )
     )
 
-def processFrame(frame) :
-    sign = "None"
+def return_blobs(frame):
+    blob_array = []
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
-    # check for stop sign
-    # if (stopSign is found) :
-    #       sign = "Stop sign"
-  
-    return sign
+    return blob_array
 
 
 def show_camera():
@@ -58,12 +52,29 @@ def show_camera():
     cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
     ser1 = serial.Serial('COM8', 9600)  # <-- fill with the proper com port value
 
+    model_file = 'best_vgg16_25.h5'
+
+    # Gets proper shape and preprocessing function
+    input_shape = (224,224)
+    preprocess = imagenet_utils.preprocess_input
+
+    model = load_model(model_file)
+
+    print('Model loaded')
+
     if cap.isOpened():
         while(True) :
             ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
 
-            sign = processFrame(img_frame)
-            if(sign == "Stop sign"):
+            # blobs = return_blobs(img_frame)
+
+            img_array = img_to_array(img_frame)
+            img_pre = preprocess(img_array)
+
+            final = np.expand_dims(img_pre, axis=0)
+            
+            probs = model.predict(final)
+            if np.argmax(probs) == 2:
                 ser1.write('s'.encode())
 
             # Stop the program on the ESC key
