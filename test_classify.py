@@ -7,13 +7,13 @@ from keras.models import load_model
 import numpy as np
 import pickle
 
-def return_blobs(frame, params):
+def return_blobs(frame, detector):
 
     # Convert image to grayscale
     gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Define the detector
-    detector = cv2.SimpleBlobDetector_create(params)
+    #detector = cv2.SimpleBlobDetector_create(params)
 
     # Detect blobs
     blobs = detector.detect(gray_img)
@@ -23,11 +23,11 @@ def return_blobs(frame, params):
     for blob in blobs:
         x, y = int(blob.pt[0]), int(blob.pt[1])
 
-        xmin = max(x - 30, 0)
-        xmax = min(x + 30, frame.shape[1])
+        xmin = max(x - 50, 0)
+        xmax = min(x + 50, frame.shape[1])
 
-        ymin = max(y - 30, 0)
-        ymax = min(y + 30, frame.shape[0])
+        ymin = max(y - 50, 0)
+        ymax = min(y + 50, frame.shape[0])
 
         box = frame[ymin:ymax, xmin:xmax]
         ROIs.append(box)
@@ -48,17 +48,18 @@ def main():
 
     params = cv2.SimpleBlobDetector_Params()
     params.filterByArea = True
-    params.minArea = 1600
+    params.minArea = 100
+    detector = cv2.SimpleBlobDetector_create(params)
 
     print('Blob detector set up')
 
     count = 1
 
     while count < 5:
-        file_name = f'img{count}.jpg'
+        file_name = f'testing_pics/img{count}.jpg'
         image = cv2.imread(file_name)
 
-        ROIs = return_blobs(image, params)
+        ROIs = return_blobs(image, detector)
 
         print(len(ROIs))
        
@@ -70,14 +71,14 @@ def main():
             img_pre = preprocess(img_array)
             final = np.expand_dims(img_pre, axis=0)
             probs = model.predict(final)[0]
-            
+            print(probs)
             if probs[2] >= 0.75:
                 stop_sign = True
-                break
+                #break
 
         if stop_sign:
             print('yuhhhh')
-            break
+            #break
 
 
 if __name__ == "__main__":
