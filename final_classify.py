@@ -18,7 +18,7 @@ def gstreamer_pipeline(
     capture_height=720,
     display_width=1280,
     display_height=720,
-    framerate=60,
+    framerate=21,
     flip_method=0,
 ):
     return (
@@ -40,15 +40,10 @@ def gstreamer_pipeline(
         )
     )
 
-def return_blobs(frame):
+def return_blobs(frame, params):
 
     # Convert image to grayscale
     gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Set parameters for blob detector
-    params = cv2.SimpleBlobDetector_Params()
-    parameters.filterByArea = True
-    params.minArea = 100
 
     # Define the detector
     detector = cv2.SimpleBlobDetector_create(params)
@@ -61,11 +56,11 @@ def return_blobs(frame):
     for blob in blobs:
         x, y = int(blob.pt[0]), int(blob.pt[1])
 
-        xmin = max(x - 50, 0)
-        xmax = min(x + 50, frame.shape[1])
+        xmin = max(x - 30, 0)
+        xmax = min(x + 30, frame.shape[1])
 
-        ymin = max(y - 50, 0)
-        ymax = min(y + 50, frame.shape[0])
+        ymin = max(y - 30, 0)
+        ymax = min(y + 30, frame.shape[0])
 
         box = frame[ymin:ymax, xmin:xmax]
         ROIs.append(box)
@@ -86,21 +81,34 @@ def show_camera():
 
     model = load_model(model_file)
 
+
+
     print('Model loaded')
+
+    params = cv2.SimpleBlobDetector_Params()
+    parameters.filterByArea = True
+    params.minArea = 1600
+    
+    print('Blob detector set up')
 
     if cap.isOpened():
         while(True) :
             ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
 
-            # blobs = return_blobs(img_frame)
-
-            img_array = img_to_array(img_frame)
-            img_pre = preprocess(img_array)
-
-            final = np.expand_dims(img_pre, axis=0)
+            ROIs = return_blobs(img_frame, params)
             
-            probs = model.predict(final)
-            if np.argmax(probs) == 2:
+            stop_sign = False
+            for roi in ROIs:
+                img_array = img_to_array(roi)
+                img_pre = preprocess(img_array)
+                final = np.expand_dims(img_pre, axis=0)
+                probs = model.predict(final)
+
+                if probs[2] >= 0.75:
+                    stop_sign = True
+                    break
+            
+            if stop_sign:
                 ser1.write('s'.encode())
 
             # Stop the program on the ESC key
