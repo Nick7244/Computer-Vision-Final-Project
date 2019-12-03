@@ -40,13 +40,13 @@ def gstreamer_pipeline(
         )
     )
 
-def return_blobs(frame, params):
+def return_blobs(frame, detector):
 
     # Convert image to grayscale
     gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Define the detector
-    detector = cv2.SimpleBlobDetector_create(params)
+    #detector = cv2.SimpleBlobDetector_create(params)
 
     # Detect blobs
     blobs = detector.detect(gray_img)
@@ -56,11 +56,11 @@ def return_blobs(frame, params):
     for blob in blobs:
         x, y = int(blob.pt[0]), int(blob.pt[1])
 
-        xmin = max(x - 30, 0)
-        xmax = min(x + 30, frame.shape[1])
+        xmin = max(x - 50, 0)
+        xmax = min(x + 50, frame.shape[1])
 
-        ymin = max(y - 30, 0)
-        ymax = min(y + 30, frame.shape[0])
+        ymin = max(y - 50, 0)
+        ymax = min(y + 50, frame.shape[0])
 
         box = frame[ymin:ymax, xmin:xmax]
         ROIs.append(box)
@@ -86,8 +86,9 @@ def show_camera():
     print('Model loaded')
 
     params = cv2.SimpleBlobDetector_Params()
-    parameters.filterByArea = True
-    params.minArea = 1600
+    params.filterByArea = True
+    params.minArea = 100
+    detector = cv2.SimpleBlobDetector_create(params)
     
     print('Blob detector set up')
 
@@ -95,14 +96,14 @@ def show_camera():
         while(True) :
             ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
 
-            ROIs = return_blobs(img_frame, params)
+            ROIs = return_blobs(img_frame, detector)
             
             stop_sign = False
             for roi in ROIs:
                 img_array = img_to_array(roi)
                 img_pre = preprocess(img_array)
                 final = np.expand_dims(img_pre, axis=0)
-                probs = model.predict(final)
+                probs = model.predict(final)[0]
 
                 if probs[2] >= 0.75:
                     stop_sign = True
