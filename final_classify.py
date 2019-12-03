@@ -41,10 +41,36 @@ def gstreamer_pipeline(
     )
 
 def return_blobs(frame):
-    blob_array = []
 
-    return blob_array
+    # Convert image to grayscale
+    gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+    # Set parameters for blob detector
+    params = cv2.SimpleBlobDetector_Params()
+    parameters.filterByArea = True
+    params.minArea = 100
+
+    # Define the detector
+    detector = cv2.SimpleBlobDetector_create(params)
+
+    # Detect blobs
+    blobs = detector.detect(gray_img)
+
+    # For every blob, carve out 100x100 array
+    ROIs = []
+    for blob in blobs:
+        x, y = int(blob.pt[0]), int(blob.pt[1])
+
+        xmin = max(x - 50, 0)
+        xmax = min(x + 50, frame.shape[1])
+
+        ymin = max(y - 50, 0)
+        ymax = min(y + 50, frame.shape[0])
+
+        box = frame[ymin:ymax, xmin:xmax]
+        ROIs.append(box)
+    
+    return ROIs
 
 def show_camera():
     # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
