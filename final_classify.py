@@ -107,6 +107,7 @@ def show_camera():
 
                 if probs[2] >= 0.75:
                     stop_sign = True
+                    print('Saw a stop sign')
                     break
             
             if stop_sign:
