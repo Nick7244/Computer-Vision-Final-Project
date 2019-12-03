@@ -82,15 +82,14 @@ void loop() {
     }
   }
   
-  if(LT_M){
-    forward();
-  }
-  else if(LT_R) {
+  if(LT_R) {
     right();
     while(LT_R);
   }
   else if(LT_L) {
     left();
     while(LT_L);
+  } else if(LT_M){
+    forward();
   }
 }
