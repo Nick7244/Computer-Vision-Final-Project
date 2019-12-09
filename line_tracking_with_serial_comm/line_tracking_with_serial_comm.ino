@@ -1,9 +1,7 @@
-//www.elegoo.com
-
-//Line Tracking IO define
-#define LT_R !digitalRead(10)
-#define LT_M !digitalRead(4)
-#define LT_L !digitalRead(2)
+//Line Tracking IO
+#define LT_R !digitalRead(10) // rightmost IR LED is blocked
+#define LT_M !digitalRead(4)  // middle IR LED is blocked
+#define LT_L !digitalRead(2)  // leftmost IR LED is blocked
 
 #define ENB 5
 #define IN1 7
@@ -12,11 +10,9 @@
 #define IN4 11
 #define ENA 6
 
-//#define carSpeed 200
+int carSpeed = 200;
 
-carSpeed = 200;
-
-void forward(){
+void forward(){ // sets the outputs on the car for forward motion
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
   digitalWrite(IN1, HIGH);
@@ -26,7 +22,7 @@ void forward(){
   Serial.println("go forward!");
 }
 
-void back(){
+void back(){  // sets the outputs on the car for backwards motion
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
   digitalWrite(IN1, LOW);
@@ -36,7 +32,7 @@ void back(){
   Serial.println("go back!");
 }
 
-void left(){
+void left(){  // sets the outputs on the car for lefward motion
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
   digitalWrite(IN1, LOW);
@@ -46,7 +42,7 @@ void left(){
   Serial.println("go left!");
 }
 
-void right(){
+void right(){ // sets the outputs on the car for rightward motion
   analogWrite(ENA, carSpeed);
   analogWrite(ENB, carSpeed);
   digitalWrite(IN1, HIGH);
@@ -56,40 +52,32 @@ void right(){
   Serial.println("go right!");
 } 
 
-void stop(){
+void stop(){ // sets the outputs on the car to have it stop
    digitalWrite(ENA, LOW);
    digitalWrite(ENB, LOW);
    Serial.println("Stop!");
 } 
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(9600); // set up the baudrate
 }
 
 void loop() {
-  if(Serial.available() > 0) {
-    if(Serial.read() == 's') {
-      stop();
-      delay(2000);
-    }
-
-    else if(Serial.read() == 'l') {
-      carspeed = 100;
-    }
-
-    else if(Serial.read() == 'h') {
-      carspeed = 200;
+  if(Serial.available() > 0) { // if commnnication line is open
+    if(Serial.read() == 's') { // if we receive a stop command
+      stop(); // stop the car
+      delay(2000); // wait 2 seconds before continuing on
     }
   }
-  
-  if(LT_R) {
-    right();
+
+  if(LT_R) { // if rightmost IR LED is blocked, tape is on right of middle of car
+    right(); // turn right until the car is centered
     while(LT_R);
   }
-  else if(LT_L) {
-    left();
+  else if(LT_L) { // if leftmost IR LED is blocked, tape is on left of middle of car
+    left();  // turn left until the car is centered
     while(LT_L);
-  } else if(LT_M){
-    forward();
+  } else if(LT_M){ // if middle IR LED is blocked, car is oriented properly
+    forward(); // continue forward
   }
 }

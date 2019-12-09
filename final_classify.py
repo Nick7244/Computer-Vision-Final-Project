@@ -45,9 +45,6 @@ def return_blobs(frame, detector):
     # Convert image to grayscale
     gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # Define the detector
-    #detector = cv2.SimpleBlobDetector_create(params)
-
     # Detect blobs
     blobs = detector.detect(gray_img)
 
@@ -71,7 +68,8 @@ def show_camera():
     # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
     print(gstreamer_pipeline(flip_method=0))
     cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
-    ser1 = serial.Serial('COM8', 9600)  # <-- fill with the proper com port value
+    
+    ser1 = serial.Serial('/dev/ttyACM0', 9600)  # <-- fill with the proper com port value
 
     model_file = 'best_vgg16_25.h5'
 
@@ -80,8 +78,6 @@ def show_camera():
     preprocess = imagenet_utils.preprocess_input
 
     model = load_model(model_file)
-
-
 
     print('Model loaded')
 
@@ -95,24 +91,33 @@ def show_camera():
     if cap.isOpened():
         while(True) :
             ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
-
+                        
             ROIs = return_blobs(img_frame, detector)
-            
             stop_sign = False
+            if len(ROIs) == 0:
+                print('Nothing seen.')
+                
             for roi in ROIs:
                 img_array = img_to_array(roi)
                 img_pre = preprocess(img_array)
                 final = np.expand_dims(img_pre, axis=0)
                 probs = model.predict(final)[0]
-
-                if probs[2] >= 0.75:
-                    stop_sign = True
+                
+                if probs[0] >= 0.75:
+                    print('Saw speed limit')
+                elif probs[1] >= 0.75:
+                    print('Saw yield')
+                elif probs[2] >= 0.75:
                     print('Saw a stop sign')
-                    break
-            
+                    stop_sign = true
+                elif probs[3] >= 0.75:
+                    print('Saw do not enter')
+                elif probs[4] >= 0.75:
+                    print('Saw traffic light')
+        
             if stop_sign:
                 ser1.write('s'.encode())
-
+           
             # Stop the program on the ESC key
             keyCode = cv2.waitKey(30) & 0xFF
             if keyCode == 27:
@@ -126,22 +131,3 @@ def show_camera():
 
 if __name__ == "__main__":
     show_camera()
-
-
-'''
-        window_handle = cv2.namedWindow("CSI Camera", cv2.WINDOW_AUTOSIZE)
-        # Window
-        while cv2.getWindowProperty("CSI Camera", 0) >= 0:
-            ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
-            cv2.imshow("CSI Camera", img_frame) # displays the current video frame
-
-            sign = processFrame(img)
-            if(sign == "Stop sign"):
-                ser1.write('s'.encode())
-
-
-            # This also acts as
-            keyCode = cv2.waitKey(30) & 0xFF
-            # Stop the program on the ESC key
-            if keyCode == 27:
-                break'''
