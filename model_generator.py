@@ -23,8 +23,8 @@ train_batch_size = 48
 valid_batch_size = 48
 train_data_dir = 'GTSRB/Training'
 validation_data_dir = 'GTSRB/Validation'
-num_train = 21312 # Corresponds to number of training images
-num_validation = 5328 # Corresponds to number of validation images
+num_train = 2640 # Corresponds to number of training images
+num_validation = 660 # Corresponds to number of validation images
 num_epochs = 25
 model_file = f"{model_type}_epochs{num_epochs}.h5"
 
