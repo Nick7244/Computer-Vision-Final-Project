@@ -1,0 +1,27 @@
+# https://www.youtube.com/watch?v=NdS5sCuGAFA
+
+
+# in python script
+import serial
+ser1 = serial.Serial('COM8', 9600)  <-- fill with the proper com port value
+
+if(stopSign == True) :
+    ser1.write('s'.encode())
+
+
+# in Arduino sketch
+void setup() {
+    Serial.begin(9600)  
+}
+
+void loop() {
+    if(Serial.available() > 0) {
+        if(Serial.read() == 's') {
+            # stop the car
+        }
+
+        else {
+            # continue moving the car
+        }
+    }
+}
