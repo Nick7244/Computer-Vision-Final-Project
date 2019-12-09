@@ -18,9 +18,8 @@ import pickle
 
 # Variables
 model_type = "vgg16" # Choose from one of the keys of MODELS
-num_class = 43
-train_batch_size = 48
-valid_batch_size = 48
+num_class = 5
+batch_size = 24
 train_data_dir = 'GTSRB/Training'
 validation_data_dir = 'GTSRB/Validation'
 num_train = 2640 # Corresponds to number of training images
@@ -43,6 +42,8 @@ if model_type == "inception":
 	input_shape = (299, 299)
 	preprocess = preprocess_input
 
+# Allows for reading of training and validation data
+# Includes data augmentation to make model more robust
 train_datagen = ImageDataGenerator( 
     rescale=1. / 255,
     width_shift_range=[-0.2, 0.2],
@@ -64,16 +65,16 @@ validation_datagen = ImageDataGenerator(
 train_generator = train_datagen.flow_from_directory( 
     train_data_dir, 
     target_size= input_shape, 
-    batch_size=train_batch_size, 
+    batch_size=batch_size, 
     class_mode='categorical')
 
 validation_generator = validation_datagen.flow_from_directory(
     validation_data_dir,
     target_size= input_shape,
-    batch_size=valid_batch_size,
+    batch_size=batch_size,
     class_mode='categorical')
 
-# Initializes model with ImageNet weights and prevent retraining
+# Initializes model with ImageNet weights and prevents retraining
 model_name = MODELS[model_type]
 base_model = model_name(include_top=False, weights="imagenet")
 for layer in base_model.layers:
@@ -81,7 +82,7 @@ for layer in base_model.layers:
 
 print('Base model loaded.')
 
-# New classification
+# Custom classification architecture
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
 x = Dense(256, activation='relu')(x)
@@ -90,18 +91,22 @@ predictions = Dense(num_class, activation='softmax')(x)
 
 model = Model(inputs=base_model.input, outputs=predictions)
 
+# Configures model for training
 model.compile(loss='categorical_crossentropy', 
               optimizer='rmsprop', 
               metrics=['accuracy'])
 
+# Saves model file between epochs
 checkpointer = ModelCheckpoint(filepath= model_type+'_epochs{epoch:02d}.h5', verbose=1)
 
+# Trains model
 model.fit_generator(
         train_generator,
-        steps_per_epoch= num_train // train_batch_size,
+        steps_per_epoch= num_train // batch_size,
         epochs= num_epochs,
         validation_data=validation_generator,
-        validation_steps= num_validation // valid_batch_size,
+        validation_steps= num_validation // batch_size,
 	callbacks=[checkpointer])
 
+# Saves final model
 model.save(model_file)
