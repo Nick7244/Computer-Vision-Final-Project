@@ -1,3 +1,7 @@
+"""
+This file is the complete python script run on the RC car.
+"""
+
 import cv2
 import serial
 import keras
@@ -40,6 +44,9 @@ def gstreamer_pipeline(
         )
     )
 
+"""
+Method that uses OPENCV simple blob detector to find regions of interest.
+"""
 def return_blobs(frame, detector):
 
     # Convert image to grayscale
@@ -64,39 +71,47 @@ def return_blobs(frame, detector):
     
     return ROIs
 
+"""
+Main method running on the RC Car.
+Loops until escape key is pressed.
+"""
 def show_camera():
+    
+    ### Set up video stream
+
     # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
     print(gstreamer_pipeline(flip_method=0))
     cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
-    
     ser1 = serial.Serial('/dev/ttyACM0', 9600)  # <-- fill with the proper com port value
-
+    
+    ### Set up Classification model
     model_file = 'best_vgg16_25.h5'
-
+    
     # Gets proper shape and preprocessing function
     input_shape = (224,224)
     preprocess = imagenet_utils.preprocess_input
-
     model = load_model(model_file)
-
     print('Model loaded')
 
+    ### Set up blob detector
     params = cv2.SimpleBlobDetector_Params()
     params.filterByArea = True
     params.minArea = 100
     detector = cv2.SimpleBlobDetector_create(params)
-    
     print('Blob detector set up')
 
+    # Loop until esc key pressed
     if cap.isOpened():
         while(True) :
             ret_val, img_frame = cap.read() # img_frame is the current frame in the video feed
-                        
+            
+            # Obtain a list of blobs in the frame
             ROIs = return_blobs(img_frame, detector)
             stop_sign = False
             if len(ROIs) == 0:
                 print('Nothing seen.')
                 
+            # Classify blobs and print what has been detected
             for roi in ROIs:
                 img_array = img_to_array(roi)
                 img_pre = preprocess(img_array)
@@ -115,6 +130,7 @@ def show_camera():
                 elif probs[4] >= 0.75:
                     print('Saw traffic light')
         
+            # If stop sign is found, tell car to stop
             if stop_sign:
                 ser1.write('s'.encode())
            
