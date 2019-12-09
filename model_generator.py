@@ -2,16 +2,8 @@
 Before running, make sure all variables in first section are correct
 Run with vgg16, resnet, or inception for respective architecture
 Uses pretrained weights on ImageNet
-Feeds into custom output block of flatten, dense, dropout, dense
+Feeds into custom output block
 Saves model
-
-TODO: Actually train and see which architecture is best
-
-Next steps in other files:
-Extract features from previous blocks of architectures and test performance
-    as input to current custom output block
-Create custom architecture
-Evaluate speed of prediction and size of models
 '''
 import keras
 from keras.applications import VGG16, InceptionV3, ResNet50
@@ -19,7 +11,6 @@ from keras.applications import imagenet_utils
 from keras.applications.inception_v3 import preprocess_input
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Model, Sequential
-from keras.models import load_model
 from keras.layers import Dropout, Dense, GlobalAveragePooling2D
 from keras.callbacks import ModelCheckpoint
 import numpy as np
@@ -32,11 +23,10 @@ train_batch_size = 48
 valid_batch_size = 48
 train_data_dir = 'GTSRB/Training'
 validation_data_dir = 'GTSRB/Validation'
-testing_data_dir = ''
 num_train = 21312 # Corresponds to number of training images
 num_validation = 5328 # Corresponds to number of validation images
 num_epochs = 25
-model_file = 'first_try_'+model_type+'.h5'
+model_file = f"{model_type}_epochs{num_epochs}.h5"
 
 # Dictionary of pretrained architectures
 MODELS = {"vgg16": VGG16, "inception": InceptionV3, "resnet": ResNet50}
@@ -104,7 +94,7 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop', 
               metrics=['accuracy'])
 
-checkpointer = ModelCheckpoint(filepath= model_type+'_{epoch:02d}.h5', verbose=1)
+checkpointer = ModelCheckpoint(filepath= model_type+'_epochs{epoch:02d}.h5', verbose=1)
 
 model.fit_generator(
         train_generator,
@@ -115,7 +105,3 @@ model.fit_generator(
 	callbacks=[checkpointer])
 
 model.save(model_file)
-
-'''
-To load model, do model = load_model('model.h5')
-'''
